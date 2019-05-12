@@ -1,7 +1,11 @@
+import sys
+import threading
+
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from numpy import matlib as m
 
-import sys
+from src.neuralNetwork import NeuralNetwork
 
 
 class MyQPushButton(QPushButton):
@@ -15,9 +19,13 @@ class MyQPushButton(QPushButton):
         self.__inserted = inserted
 
 
+
 class View(QDialog):
 
     selectedFields = []
+    neuralNetwork = None
+    inputLayout = None
+    modelResult = None
 
     def __init__(self):
         super().__init__()
@@ -28,8 +36,8 @@ class View(QDialog):
 
         self.inputGroupBox = QGroupBox("Ustawienia")
         self.inputGroupBox.setFixedWidth(self.width//2)
-        self.panel = QGroupBox("Panel")
-        self.wykres = QGroupBox("Wykres")
+        self.panel = QGroupBox("Klasyfikacja")
+        self.plot = QGroupBox("wykres")
 
         self.initUI()
 
@@ -40,7 +48,7 @@ class View(QDialog):
         windowLayout = QGridLayout()
         windowLayout.addWidget(self.inputGroupBox, 0, 0)
         windowLayout.addWidget(self.panel, 0, 1)
-        windowLayout.addWidget(self.wykres, 1, 0, 1, 2)
+        windowLayout.addWidget(self.plot, 1, 0, 1, 2)
 
         self.createSettings()
         self.createPanel()
@@ -55,20 +63,46 @@ class View(QDialog):
         classifyButton = QPushButton("Klasyfikuj")
         classifyButton.setFixedHeight(40)
         classifyButton.clicked.connect(self.classifyClick)
-        # teachButton.accepted.connect(self.accept)
+        teachButton.clicked.connect(self.teachClick)
 
-        layout = QFormLayout()
-        layout.addRow(QLabel("Liczba epok"), QLineEdit())
-        layout.addRow(QLabel("Prog bledu"), QLineEdit())
-        layout.addRow(QLabel("Wspolczynnik uczenia"), QLineEdit())
-        layout.addRow(QLabel("Ilosc warstw ukrytych"), QLineEdit())
-        layout.addRow(QLabel("Status Modelu"), QLabel("Nienauczony"))
-        layout.addRow(teachButton)
-        layout.addRow(classifyButton)
-        self.inputGroupBox.setLayout(layout)
+        self.inputLayout = QFormLayout()
+        self.inputLayout.addRow(QLabel("Liczba epok"), QLineEdit("700"))
+        self.inputLayout.addRow(QLabel("Próg błędu"), QLineEdit("0.5"))
+        self.inputLayout.addRow(QLabel("Współczynnik uczenia"), QLineEdit("0.5"))
+        self.inputLayout.addRow(QLabel("Ilość warstw ukrytych"), QLineEdit("17"))
+        self.inputLayout.addRow(QLabel("Wspolczynnik stromosci"), QLineEdit("1"))
+        statusLabel = QLabel("Nienauczony")
+        statusLabel.setStyleSheet("color: red; font-weight: bold;")
+        self.inputLayout.addRow(QLabel("Status Modelu"), statusLabel)
+        self.inputLayout.addRow(teachButton)
+        self.inputLayout.addRow(classifyButton)
+        self.inputGroupBox.setLayout(self.inputLayout)
+
+    def teachClick(self):
+        x = threading.Thread(target=self.execute_teach)
+        x.start()
+
+
+    def execute_teach(self):
+        modelStatusText = self.inputLayout.itemAt(5, QFormLayout.FieldRole).widget()
+        modelStatusText.setText("trwa uczenie...")
+        maxEpoch = int(self.inputLayout.itemAt(0, QFormLayout.FieldRole).widget().text())
+        maxError = float(self.inputLayout.itemAt(1, QFormLayout.FieldRole).widget().text())
+        alpha = float(self.inputLayout.itemAt(2, QFormLayout.FieldRole).widget().text())
+        lambd = float(self.inputLayout.itemAt(4, QFormLayout.FieldRole).widget().text())
+        hiddenLayers = int(self.inputLayout.itemAt(3, QFormLayout.FieldRole).widget().text())
+        self.neuralNetwork = NeuralNetwork(hiddenLayers, alpha, maxError, maxEpoch, lambd)
+        self.neuralNetwork.teach()
+        modelStatusText.setText("nauczony")
+        modelStatusText.setStyleSheet("color: green; font-weight: bold;")
 
     def classifyClick(self):
-        print(self.selectedFields)
+        result = self.neuralNetwork.classify_input(m.mat(self.selectedFields))
+        if result == -1:
+            self.modelResult.setText("?")
+        else:
+            self.modelResult.setText(str(result))
+
 
     def createPanel(self):
         mainGrid = QGridLayout()
@@ -101,6 +135,8 @@ class View(QDialog):
 
         label = QLabel("?")
         label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("font-size:60px")
+        self.modelResult = label
 
         mainGrid.addWidget(label, 0, 1)
 
@@ -113,8 +149,6 @@ class View(QDialog):
 
         sending_button.setStyleSheet("background-color: red;") \
             if sending_button.isInserted() else sending_button.setStyleSheet("background-color: white;")
-
-
 
 
 if __name__ == '__main__':
