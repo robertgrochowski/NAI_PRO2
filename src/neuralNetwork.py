@@ -1,93 +1,11 @@
 import numpy as np
-from numpy import matlib as m
+import src.trainingSet as trainingSet
 import math
 
+from numpy import matlib as m
+
+
 class NeuralNetwork:
-
-    trainingSet = m.mat([
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0],
-
-        [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-        [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0],
-        [0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1],
-        [1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1],
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1],
-
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-
-        [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
-
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        [0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    ], dtype=float)
-
-    answerSet = m.mat([
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-
-        [0, 0, 0, 1],
-        [0, 0, 0, 1],
-        [0, 0, 0, 1],
-
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-
-        [0, 0, 1, 1],
-        [0, 0, 1, 1],
-        [0, 0, 1, 1],
-
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-
-        [0, 1, 0, 1],
-        [0, 1, 0, 1],
-        [0, 1, 0, 1],
-
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-
-        [0, 1, 1, 1],
-        [0, 1, 1, 1],
-        [0, 1, 1, 1],
-
-        [1, 0, 0, 0],
-        [1, 0, 0, 0],
-        [1, 0, 0, 0],
-
-        [1, 0, 0, 1],
-        [1, 0, 0, 1],
-        [1, 0, 0, 1]
-
-    ],dtype=float)
 
     def __init__(self, hidden_layer_neurons, alpha, max_error, max_epoch_amount,  _lambda=1):
         self.alpha = alpha
@@ -96,8 +14,11 @@ class NeuralNetwork:
         self.maxEpochAmount = max_epoch_amount
         self.hiddenLayerNeurons = hidden_layer_neurons
         self.outputLayerNeurons = 4
-        self.hiddenLayerWeights = m.rand(hidden_layer_neurons, 24) # todo 24
+        self.hiddenLayerWeights = m.rand(hidden_layer_neurons, 24)
         self.outputLayerWeights = m.rand(self.outputLayerNeurons, hidden_layer_neurons)
+
+        self.trainingSet = trainingSet.trainingSet
+        self.answerSet = trainingSet.answerSet
 
         self.hiddenLayerBias = m.rand(self.hiddenLayerNeurons, 1)
         self.outputLayerBias = m.rand(self.outputLayerNeurons, 1)
@@ -106,7 +27,8 @@ class NeuralNetwork:
 
         error = 100
         epoch = 0
-        while error >= self.maxError and epoch <= self.maxEpochAmount:
+        errorList = []
+        while error >= self.maxError and epoch < self.maxEpochAmount:
             error = 0
             for i in range(0, self.trainingSet.shape[0]):
                 # Xn:
@@ -155,8 +77,10 @@ class NeuralNetwork:
 
             error /= 2
             epoch += 1
+            errorList.append(error)
             print(str(error))
-        print(str(epoch))
+
+        return errorList, epoch
 
     def classify_input(self, _input):
         # Hidden layer
@@ -167,6 +91,7 @@ class NeuralNetwork:
         NET2 = np.dot(self.outputLayerWeights, Y) + self.outputLayerBias
         Z = self.get_sigmoid_bipolar_value(NET2, self._lambda)
 
+        print(Z)
         out = m.zeros((4, 1))
 
         for k in range(4):
@@ -192,16 +117,4 @@ class NeuralNetwork:
             output[i][0] = (2 / (1 + pow(math.e, -output.item(i, 0)*_lambda))) - 1
 
         return output
-
-# if __name__ == '__main__':
-#     n = NeuralNetwork(25, 0.5, 0.5, 2500)
-#     n.teach()
-#
-#     for x in range(30):
-#         print(n.classify_input(n.trainingSet[x]))
-#         if (x+1)%3==0: print("------")
-#
-#     #v = n.sigmoid(-1)
-#     #print(v)
-#     pass
 
