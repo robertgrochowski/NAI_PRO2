@@ -1,8 +1,8 @@
-import numpy as np
-import src.trainingSet as trainingSet
 import math
-
+import numpy as np
 from numpy import matlib as m
+
+import src.trainingSet as trainingSet
 
 
 class NeuralNetwork:
@@ -78,7 +78,7 @@ class NeuralNetwork:
             error /= 2
             epoch += 1
             errorList.append(error)
-            print(str(error))
+            print("error: " + str(error))
 
         return errorList, epoch
 
@@ -91,7 +91,7 @@ class NeuralNetwork:
         NET2 = np.dot(self.outputLayerWeights, Y) + self.outputLayerBias
         Z = self.get_sigmoid_bipolar_value(NET2, self._lambda)
 
-        print(Z)
+        # print(Z)
         out = m.zeros((4, 1))
 
         for k in range(4):

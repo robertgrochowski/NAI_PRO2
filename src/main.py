@@ -2,10 +2,10 @@ import sys
 import threading
 import time
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from numpy import matlib as m
 
 from src.neuralNetwork import NeuralNetwork
@@ -31,10 +31,10 @@ class View(QDialog):
         self.horizontalGroupBox = QGroupBox("Grid")
 
         # initialize 3 main sections
-        self.inputGroupBox = QGroupBox("Ustawienia nauczania")
+        self.inputGroupBox = QGroupBox("Teach settings")
         self.inputGroupBox.setFixedWidth(self.width//2)
-        self.panel = QGroupBox("Klasyfikacja")
-        self.plot = QGroupBox("Wykres błędu")
+        self.panel = QGroupBox("Classification")
+        self.plot = QGroupBox("Error plot")
 
         self.initUI()
 
@@ -67,17 +67,17 @@ class View(QDialog):
     def create_settings(self):
         # Create settings section and add widgets to layout
         self.inputLayout = QFormLayout()
-        self.inputLayout.addRow(QLabel("Liczba epok"), QLineEdit("700"))
-        self.inputLayout.addRow(QLabel("Próg błędu"), QLineEdit("0.5"))
-        self.inputLayout.addRow(QLabel("Współczynnik uczenia"), QLineEdit("0.5"))
-        self.inputLayout.addRow(QLabel("Ilość warstw ukrytych"), QLineEdit("17"))
-        self.inputLayout.addRow(QLabel("Wspolczynnik stromosci"), QLineEdit("1"))
+        self.inputLayout.addRow(QLabel("Epochs amount"), QLineEdit("700"))
+        self.inputLayout.addRow(QLabel("Error threshold"), QLineEdit("0.5"))
+        self.inputLayout.addRow(QLabel("Learning factor"), QLineEdit("0.5"))
+        self.inputLayout.addRow(QLabel("Number of hidden layers"), QLineEdit("17"))
+        self.inputLayout.addRow(QLabel("Steepness factor"), QLineEdit("1"))
 
-        statusLabel = QLabel("Nienauczony")
+        statusLabel = QLabel("untaught")
         statusLabel.setStyleSheet("color: red; font-weight: bold;")
-        self.inputLayout.addRow(QLabel("Status Modelu"), statusLabel)
+        self.inputLayout.addRow(QLabel("Model status"), statusLabel)
 
-        teachButton = QPushButton("Naucz")
+        teachButton = QPushButton("Teach")
         teachButton.setFixedHeight(40)
         teachButton.clicked.connect(self.teach_click)
 
@@ -108,11 +108,11 @@ class View(QDialog):
         mainGrid.addLayout(clickableGrid, 0, 0)
         mainGrid.setSpacing(10)
 
-        label = QLabel("Narysuj cyfrę")
+        label = QLabel("Draw a digit")
         label.setAlignment(Qt.AlignCenter)
         mainGrid.addWidget(label, 1, 0)
 
-        label = QLabel("Wynik modelu")
+        label = QLabel("Model result")
         label.setAlignment(Qt.AlignCenter)
         mainGrid.addWidget(label, 1, 1)
 
@@ -122,7 +122,7 @@ class View(QDialog):
         mainGrid.addWidget(label, 0, 1)
         self.modelResult = label
 
-        classifyButton = QPushButton("Klasyfikuj")
+        classifyButton = QPushButton("Classify")
         classifyButton.setFixedHeight(40)
         classifyButton.clicked.connect(self.classify_click)
         mainGrid.addWidget(classifyButton, 2, 0, 1, 2)
@@ -160,7 +160,7 @@ class View(QDialog):
 
             # Set model status
             modelStatusText = self.inputLayout.itemAt(5, QFormLayout.FieldRole).widget()
-            modelStatusText.setText("trwa uczenie...")
+            modelStatusText.setText("Teaching in progress...")
             modelStatusText.setStyleSheet("color: red; font-weight: bold;")
             self.teaching = True
 
@@ -174,7 +174,7 @@ class View(QDialog):
             self.plotCanvas.plot(errors)
 
             # Change model status
-            modelStatusText.setText("nauczony")
+            modelStatusText.setText("Taught")
             modelStatusText.setStyleSheet("color: green; font-weight: bold;")
 
             self.threadFinishedSignal.emit((errors, epochs, elapsedTime))
